@@ -38,7 +38,7 @@ import {
 } from "react-icons/si";
 import type { IconType } from "react-icons";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CircuitLines, HexBadge, SoftBlueprint } from "@/components/portfolio/Decor";
 import { ArtworkSlot, HeroIllustration, MiniArtworkSlot } from "@/components/portfolio/HeroIllustration";
@@ -113,7 +113,7 @@ const SOCIAL_LINKS = {
   github: "https://github.com/vikasraj319",
   linkedin: "https://www.linkedin.com/in/vikas-tovi-8a87522a5",
   resume: "/resume.pdf",
-  email: "vikastovi@gmail.com"
+  email: "mailto:vikastovi@gmail.com"
 };
 
 const projects = [
@@ -123,27 +123,35 @@ const projects = [
     tags: ["React", "Node.js", "OpenAI"],
     image: "/images/AI-Planner.png",
     featured: true,
+    liveUrl: "https://ai-travel-planner-gamma-sooty.vercel.app/",
+    githubUrl: "https://github.com/vikasraj319/ai-travel-planner",
   },
   {
     title: "Habit Tracker",
     desc: "A premium habit tracker with analytics and streaks.",
     tags: ["Flask", "PostgreSQL", "Chart.js"],
-    image: "/images/habit-tracker.png",
+    image: "/images/Habit-Tracker.png",
     featured: true,
+    liveUrl: "https://habit-tracker-9l14.onrender.com",
+    githubUrl: "https://github.com/vikasraj319/ai-travel-planner",
   },
   {
     title: "Personal Portfolio",
     desc: "My personal portfolio built with modern UI and animations.",
     tags: ["React", "Tailwind CSS", "Vite"],
-    image: "/images/portfolio.png",
+    image: "/images/MyPortfolio.png",
     featured: false,
+    liveUrl: "",
+    githubUrl: "https://github.com/vikasraj319/MyPortfolio",
   },
   {
-    title: "Phishing Detection System",
+    title: "Phishing URL Detection System",
     desc: "ML based system to detect phishing websites in real-time.",
     tags: ["Python", "Machine Learning", "Flask"],
-    image: "/images/phishing-detection.png",
+    image: "/images/Phishing-Detector.png",
     featured: false,
+    liveUrl: "",
+    githubUrl: "",
   },
 ];
 
@@ -168,55 +176,100 @@ function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("Home");
   const [menuOpen, setMenuOpen] = useState(false);
+  const navbarRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+
+      if (window.scrollY <= 10) {
+        return;
+      }
+
+      if (navbarRef.current?.contains(target)) {
+        return;
+      }
+
+      setShowNavbar((prev) => !prev);
+      setMenuOpen(false);
+    };
+
+    window.addEventListener("click", handleOutsideClick);
+
+    return () => {
+      window.removeEventListener("click", handleOutsideClick);
+    };
+  }, []);
+
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const scrollingDown = currentScrollY > lastScrollY;
+
+      setMenuOpen(false);
+
+      if (currentScrollY <= 20) {
+        setShowNavbar(true);
+      } else if (scrollingDown && currentScrollY > 120) {
+        setShowNavbar(false);
+      } else if (!scrollingDown) {
+        setShowNavbar(true);
+      }
 
       setScrolled(currentScrollY > 40);
-      setShowNavbar(!(currentScrollY > lastScrollY && currentScrollY > 120));
 
+      // Active section
       document.querySelectorAll<HTMLElement>("section[id]").forEach((section) => {
         const top = section.offsetTop - 120;
         const height = section.clientHeight;
         const id = section.getAttribute("id");
 
-        if (currentScrollY >= top && currentScrollY < top + height) {
-          const match = navLinks.find((item) => item.href === `#${id}`);
-          if (match) setActive(match.label);
+        if (
+          currentScrollY >= top &&
+          currentScrollY < top + height
+        ) {
+          const match = navLinks.find(
+            (item) => item.href === `#${id}`
+          );
+
+          if (match) {
+            setActive(match.label);
+          }
         }
       });
 
       lastScrollY = currentScrollY;
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleNavClick = (label: string) => {
     setActive(label);
     setMenuOpen(false);
+    setShowNavbar(true);
   };
 
   return (
     <motion.header
+      ref={navbarRef}
       initial={false}
       animate={{
         width: scrolled ? "min(94%, 1240px)" : "100%",
         y: showNavbar ? 0 : -120,
-        top: scrolled ? 20 : 0,
+        top: scrolled ? 10 : 0,
         borderRadius: scrolled ? 999 : 0,
       }}
       transition={{ type: "spring", stiffness: 140, damping: 22, mass: 0.8 }}
-      className="site-header"
-      style={{
-        background: scrolled ? "rgba(255,255,255,0.75)" : "#ffffff",
-        backdropFilter: scrolled ? "blur(18px)" : "blur(0px)",
-        boxShadow: scrolled ? "0 18px 45px rgba(0,0,0,.12)" : "0 2px 8px rgba(0,0,0,.04)",
-      }}
+      className={`site-header ${scrolled ? "navbar-scrolled" : "navbar-top"
+        }`}
     >
       <motion.div
         animate={{
@@ -248,7 +301,7 @@ function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <a href="/resume.pdf" download className="resume-button">
+          <a href="/Vikas-Resume.pdf" download className="resume-button">
             <span>Download Resume</span>
             <Download className="icon-sm" />
           </a>
@@ -257,7 +310,11 @@ function Navbar() {
             className="menu-toggle"
             aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowNavbar(true);
+              setMenuOpen((open) => !open);
+            }}
           >
             {menuOpen ? <X className="icon-md" /> : <Menu className="icon-md" />}
           </button>
@@ -281,7 +338,7 @@ function Navbar() {
 }
 
 function Hero() {
-          const allTech = [...floatingTech.left, ...floatingTech.right];
+  const allTech = [...floatingTech.left, ...floatingTech.right];
 
   return (
     <section id="home" className="section section-bordered hero-section">
@@ -331,9 +388,13 @@ function Hero() {
               {/* <IconButton href="#" label="Twitter profile" small>
                 <Twitter className="icon-sm" />
               </IconButton> */}
-              <IconButton href={SOCIAL_LINKS.email} label="Email" small>
+              <a
+                href={SOCIAL_LINKS.email}
+                aria-label="Email"
+                className="icon-button icon-button--small"
+              >
                 <Mail className="icon-sm" />
-              </IconButton>
+              </a>
             </div>
           </div>
         </motion.div>
@@ -348,41 +409,29 @@ function Hero() {
           className="hero-visual"
         >
           <HeroIllustration />
-          <div className="mobile-tech-grid">
 
-            {allTech.map((tech) => (
-
-                <FloatingTechCard
-                    key={tech.name}
-                    {...tech}
-                    delay={0}
-                />
-
-            ))}
-
-        </div>
           <div className="desktop-tech-grid">
-          {/* Left Column */}
-          <div className="tech-column tech-column-left">
-            {floatingTech.left.map((tech, index) => (
-              <FloatingTechCard
-                key={tech.name}
-                {...tech}
-                delay={index * 0.08}
-              />
-            ))}
-          </div>
+            {/* Left Column */}
+            <div className="tech-column tech-column-left">
+              {floatingTech.left.map((tech, index) => (
+                <FloatingTechCard
+                  key={tech.name}
+                  {...tech}
+                  delay={index * 0.08}
+                />
+              ))}
+            </div>
 
-          {/* Right Column */}
-          <div className="tech-column tech-column-right">
-            {floatingTech.right.map((tech, index) => (
-              <FloatingTechCard
-                key={tech.name}
-                {...tech}
-                delay={index * 0.08 + 0.25}
-              />
-            ))}
-          </div>
+            {/* Right Column */}
+            <div className="tech-column tech-column-right">
+              {floatingTech.right.map((tech, index) => (
+                <FloatingTechCard
+                  key={tech.name}
+                  {...tech}
+                  delay={index * 0.08 + 0.25}
+                />
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>
@@ -535,7 +584,7 @@ function Projects() {
           ))}
         </motion.div>
 
-        <MiniArtworkSlot className="decor decor-project-art" label="Future art" />
+        {/* <MiniArtworkSlot className="decor decor-project-art" label="Future art" /> */}
       </div>
     </section>
   );
@@ -543,46 +592,65 @@ function Projects() {
 
 function Contact() {
   const [formData, setFormData] = useState({
-      name: "",
-      email: "",
-      message: "",
-    });
+    name: "",
+    email: "",
+    message: "",
+  });
 
-const handleChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-      setFormData((prev) => ({
-        ...prev,
-        [e.target.name]: e.target.value,
-      }));
-    };
+  const [loading, setLoading] = useState(false);
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-  setLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  try {
-    await sendContact({
-      data: formData,
-    });
+    if (!formData.name.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
 
-    alert("Message sent successfully!");
+    if (!formData.email.trim()) {
+      alert("Please enter your email.");
+      return;
+    }
 
-    setFormData({
-      name: "",
-      email: "",
-      message: "",
-    });
-  } catch (err) {
-    alert("Unable to send message.");
-  } finally {
-    setLoading(false);
-  }
-};
+    if (!formData.message.trim()) {
+      alert("Please enter your message.");
+      return;
+    }
 
-const [loading, setLoading] = useState(false);
+    setLoading(true);
 
+    try {
+      await sendContact({
+        data: {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          message: formData.message.trim(),
+        },
+      });
+
+      alert("Message sent successfully!");
+
+      setFormData({
+        name: "",
+        email: "",
+        message: "",
+      });
+    } catch (err) {
+      console.error("Contact form error:", err);
+      alert("Unable to send message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section id="contact" className="section contact-section">
@@ -618,21 +686,21 @@ const [loading, setLoading] = useState(false);
                   placeholder="Your Name"
                 />
                 <input
-                    className="portfolio-input"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Your Email"
-                  />
+                  className="portfolio-input"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Your Email"
+                />
               </div>
-              <textarea 
-                className="portfolio-input portfolio-textarea" 
+              <textarea
+                className="portfolio-input portfolio-textarea"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Your Message" 
-                aria-label="Your Message" 
+                placeholder="Your Message"
+                aria-label="Your Message"
               />
               <button
                 type="submit"
@@ -676,7 +744,7 @@ function Footer() {
           <HexBadge className="footer-mark" />
           <p>(c) 2025 Vikas Raj. All rights reserved.</p>
         </div>
-        <p>Built with love and lots of coffee</p>
+        <p>Still learning. Still building. Still looking beyond.</p>
       </div>
     </footer>
   );
@@ -787,17 +855,21 @@ function ProjectCard({
   tags,
   image,
   featured,
+  githubUrl,
+  liveUrl,
 }: {
   title: string;
   desc: string;
   tags: string[];
   image: string;
   featured: boolean;
+  githubUrl?: string;
+  liveUrl?: string;
 }) {
   return (
     <motion.article variants={fadeUp} whileHover={{ y: -7 }} className="project-card">
       <div className="project-card__media">
-        <img src={image} alt={title} />
+        <img src={image} alt={`${title} project preview`} className="project-card__image" />
         {featured && <div className="project-card__badge">Featured</div>}
         <div className="project-card__overlay" />
       </div>
@@ -810,10 +882,21 @@ function ProjectCard({
           ))}
         </div>
         <div className="project-card__links">
-          <a href="#" aria-label={`${title} source code`}>
+          <a
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${title} source code`}
+          >
             <Github className="icon-sm" />
           </a>
-          <a href="#" aria-label={`${title} live preview`}>
+
+          <a
+            href={liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${title} live preview`}
+          >
             <ExternalLink className="icon-sm" />
           </a>
         </div>

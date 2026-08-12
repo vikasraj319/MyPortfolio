@@ -121,7 +121,7 @@ const projects = [
     title: "AI Travel Planner",
     desc: "AI powered travel planner that creates personalized itineraries.",
     tags: ["React", "Node.js", "OpenAI"],
-    image: "/images/AI-Planner.png",
+    image: "/images/AI-Travel Planner.png",
     featured: true,
     liveUrl: "https://ai-travel-planner-gamma-sooty.vercel.app/",
     githubUrl: "https://github.com/vikasraj319/ai-travel-planner",

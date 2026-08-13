@@ -39,7 +39,8 @@ import {
 import type { IconType } from "react-icons";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-
+import ToastContainer from "@/components/portfolio/Toast";
+import type { ToastType } from "@/components/portfolio/Toast";
 import { CircuitLines, HexBadge, SoftBlueprint } from "@/components/portfolio/Decor";
 import { ArtworkSlot, HeroIllustration, MiniArtworkSlot } from "@/components/portfolio/HeroIllustration";
 import { sendContact } from "@/server";
@@ -599,8 +600,17 @@ function Contact() {
 
   const [loading, setLoading] = useState(false);
 
+  const [toast, setToast] = useState<{
+    message: string;
+    title?: string;
+    type: ToastType;
+    duration?: number;
+  } | null>(null);
+
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement
+    >,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -608,23 +618,78 @@ function Contact() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const showToast = (
+    type: ToastType,
+    title: string,
+    message: string,
+    duration = 4000,
+  ) => {
+    setToast({
+      type,
+      title,
+      message,
+      duration,
+    });
+  };
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
 
+    /*
+     * ==========================
+     * VALIDATION
+     * ==========================
+     */
+
     if (!formData.name.trim()) {
-      alert("Please enter your name.");
+      showToast(
+        "warning",
+        "Name is required",
+        "Please enter your name before sending the message.",
+      );
       return;
     }
 
     if (!formData.email.trim()) {
-      alert("Please enter your email.");
+      showToast(
+        "warning",
+        "Email is required",
+        "Please enter your email address.",
+      );
+      return;
+    }
+
+    /*
+     * Basic email validation
+     */
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email.trim())) {
+      showToast(
+        "warning",
+        "Invalid email address",
+        "Please enter a valid email address.",
+      );
       return;
     }
 
     if (!formData.message.trim()) {
-      alert("Please enter your message.");
+      showToast(
+        "warning",
+        "Message is required",
+        "Please enter a message before submitting the form.",
+      );
       return;
     }
+
+    /*
+     * ==========================
+     * SEND MESSAGE
+     * ==========================
+     */
 
     setLoading(true);
 
@@ -637,104 +702,269 @@ function Contact() {
         },
       });
 
-      alert("Message sent successfully!");
+      /*
+       * Success toast
+       */
+      showToast(
+        "success",
+        "Message sent successfully!",
+        "I'll get back to you as soon as possible.",
+        4000,
+      );
 
+      /*
+       * Reset form
+       */
       setFormData({
         name: "",
         email: "",
         message: "",
       });
     } catch (err) {
-      console.error("Contact form error:", err);
-      alert("Unable to send message. Please try again.");
+      console.error(
+        "Contact form error:",
+        err,
+      );
+
+      /*
+       * Error toast
+       */
+      showToast(
+        "error",
+        "Unable to send message",
+        "Something went wrong. Please try again later.",
+        5000,
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section id="contact" className="section contact-section">
-      <div className="container contact-grid">
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="contact-card"
-        >
-          <div className="contact-info">
-            <SectionHeader icon={<Mail className="icon-xs" />} title="Let's Work Together" />
-            <h2 className="contact-title">Have a project in mind?</h2>
-            <p className="contact-copy">Let's build something amazing together.</p>
-            <div className="contact-methods">
-              <ContactRow icon={<Mail className="icon-xs" />} text={import.meta.env.VITE_DISPLAY_EMAIL} />
-              <ContactRow icon={<Phone className="icon-xs" />} text={import.meta.env.VITE_PHONE} />
-              <ContactRow icon={<MapPin className="icon-xs" />} text={import.meta.env.VITE_LOCATION} />
-            </div>
-            <MiniArtworkSlot className="contact-mini-art" label="Future artwork" />
-          </div>
+    <>
+      <section
+        id="contact"
+        className="section contact-section"
+      >
+        <div className="container contact-grid">
 
-          <div className="contact-form-panel">
-            <SectionHeader icon={<Send className="icon-xs" />} title="Send a Message" />
-            <form onSubmit={handleSubmit} className="contact-form">
-              <div className="form-grid">
-                <input
-                  className="portfolio-input"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your Name"
-                />
-                <input
-                  className="portfolio-input"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Your Email"
-                />
-              </div>
-              <textarea
-                className="portfolio-input portfolio-textarea"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                placeholder="Your Message"
-                aria-label="Your Message"
+          {/* =========================
+              CONTACT INFORMATION
+          ========================== */}
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 25,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+            }}
+            transition={{
+              duration: 0.5,
+            }}
+            className="contact-card"
+          >
+            <div className="contact-info">
+
+              <SectionHeader
+                icon={
+                  <Mail className="icon-xs" />
+                }
+                title="Let's Work Together"
               />
-              <button
-                type="submit"
-                className="button button--primary form-submit"
-                disabled={loading}
+
+              <h2 className="contact-title">
+                Have a project in mind?
+              </h2>
+
+              <p className="contact-copy">
+                Let's build something amazing
+                together.
+              </p>
+
+              <div className="contact-methods">
+
+                <ContactRow
+                  icon={
+                    <Mail className="icon-xs" />
+                  }
+                  text={
+                    import.meta.env
+                      .VITE_DISPLAY_EMAIL
+                  }
+                />
+
+                <ContactRow
+                  icon={
+                    <Phone className="icon-xs" />
+                  }
+                  text={
+                    import.meta.env.VITE_PHONE
+                  }
+                />
+
+                <ContactRow
+                  icon={
+                    <MapPin className="icon-xs" />
+                  }
+                  text={
+                    import.meta.env.VITE_LOCATION
+                  }
+                />
+
+              </div>
+
+              <MiniArtworkSlot
+                className="contact-mini-art"
+                label="Future artwork"
+              />
+
+            </div>
+
+            {/* =========================
+                CONTACT FORM
+            ========================== */}
+
+            <div className="contact-form-panel">
+
+              <SectionHeader
+                icon={
+                  <Send className="icon-xs" />
+                }
+                title="Send a Message"
+              />
+
+              <form
+                onSubmit={handleSubmit}
+                className="contact-form"
+                noValidate
               >
-                <span>
-                  {loading ? "Sending..." : "Send Message"}
-                </span>
 
-                <Send className="icon-sm" />
-              </button>
-            </form>
-          </div>
-        </motion.div>
+                <div className="form-grid">
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.55 }}
-          className="quote-card"
-        >
-          <img src="/images/autobot-logo.png" alt="" className="quote-card__logo" />
-          <Quote className="quote-card__icon" />
-          <p className="quote-card__text">"Strength comes from working together."</p>
-          <div className="quote-card__rule" />
-          <p className="quote-card__author">- Bumblebee</p>
-          <img src="/images/Bumblebee-qote.png" alt="" className="quote-card__image" />
-        </motion.div>
-      </div>
-    </section>
+                  {/* NAME */}
+
+                  <input
+                    className="portfolio-input"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Your Name"
+                    autoComplete="name"
+                    disabled={loading}
+                  />
+
+                  {/* EMAIL */}
+
+                  <input
+                    className="portfolio-input"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Your Email"
+                    autoComplete="email"
+                    disabled={loading}
+                  />
+
+                </div>
+
+                {/* MESSAGE */}
+
+                <textarea
+                  className="portfolio-input portfolio-textarea"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Your Message"
+                  aria-label="Your Message"
+                  disabled={loading}
+                />
+
+                {/* SUBMIT */}
+
+                <button
+                  type="submit"
+                  className="button button--primary form-submit"
+                  disabled={loading}
+                >
+                  <span>
+                    {loading
+                      ? "Sending..."
+                      : "Send Message"}
+                  </span>
+
+                  <Send className="icon-sm" />
+                </button>
+
+              </form>
+            </div>
+          </motion.div>
+
+          {/* =========================
+              QUOTE CARD
+          ========================== */}
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+            }}
+            transition={{
+              duration: 0.55,
+            }}
+            className="quote-card"
+          >
+
+            <img
+              src="/images/autobot-logo.png"
+              alt=""
+              className="quote-card__logo"
+            />
+
+            <Quote className="quote-card__icon" />
+
+            <p className="quote-card__text">
+              "Strength comes from working together."</p>
+
+            <div className="quote-card__rule" />
+
+            <p className="quote-card__author">
+              - Bumblebee
+            </p>
+
+            <img
+              src="/images/Bumblebee-qote.png"
+              alt="Bumblebee"
+              className="quote-card__image"
+            />
+
+          </motion.div>
+
+        </div>
+      </section>
+
+      <ToastContainer
+        toast={toast}
+        onClose={() => setToast(null)}
+      />
+    </>
   );
 }
+
 
 function Footer() {
   return (
@@ -905,11 +1135,22 @@ function ProjectCard({
   );
 }
 
-function ContactRow({ icon, text }: { icon: ReactNode; text: string }) {
+function ContactRow({
+  icon,
+  text,
+}: {
+  icon: React.ReactNode;
+  text: string;
+}) {
   return (
     <div className="contact-row">
-      <span>{icon}</span>
-      <span>{text}</span>
+      <div className="contact-row__icon">
+        {icon}
+      </div>
+
+      <span className="contact-row__text">
+        {text}
+      </span>
     </div>
   );
 }

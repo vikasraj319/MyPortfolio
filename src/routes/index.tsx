@@ -972,7 +972,7 @@ function Footer() {
       <div className="container footer-container">
         <div className="footer-brand">
           <HexBadge className="footer-mark" />
-          <p>(c) 2025 Vikas Raj. All rights reserved.</p>
+          <p>(c) 2026 Vikas Raj. All rights reserved.</p>
         </div>
         <p>Still learning. Still building. Still looking beyond.</p>
       </div>

@@ -996,7 +996,7 @@
 }
 
 .decor-image--chevrolet {
-  top: 26.25rem;
+  top: 36rem;
   left: -5rem;
   z-index: 30;
   width: 15rem;
@@ -1433,10 +1433,10 @@
 }
 
 .quote-card__rule {
-  width: 100%;
+  width: 60%;
   height: 1px;
-  margin-top: 2rem;
-  background: rgb(244 196 48 / 0.2);
+  margin-top: 1.6rem;
+  background: rgb(244 196 48 / 0.8);
 }
 
 .quote-card__author {

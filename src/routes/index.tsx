@@ -10,11 +10,14 @@ import {
   Download,
   ExternalLink,
   Github,
+  Globe,
   Linkedin,
   Mail,
   MapPin,
   Menu,
   MessageCircle,
+  MessageSquareCode,
+  Network,
   Phone,
   Quote,
   Rocket,
@@ -27,14 +30,20 @@ import {
   SiDocker,
   SiFlask,
   SiGit,
+  SiGithub,
+  SiHtml5,
   SiJavascript,
   SiLinux,
   SiNodedotjs,
+  SiOpenjdk,
   SiPostgresql,
   SiPython,
+  SiCss,
   SiReact,
+  SiSupabase,
   SiTailwindcss,
   SiTypescript,
+  SiSpringboot,
 } from "react-icons/si";
 import type { IconType } from "react-icons";
 import type { ReactNode } from "react";
@@ -73,10 +82,10 @@ const navLinks = [
 
 const floatingTech = {
   left: [
-    { name: "React", icon: SiReact, tone: "text-[#00A8D8]" },
+    { name: "Java", icon: SiOpenjdk, tone: "text-[#ED8B00]" },
     { name: "TypeScript", icon: SiTypescript, tone: "text-[#3178C6]" },
     { name: "Python", icon: SiPython, tone: "text-[#3776AB]" },
-    { name: "Flask", icon: SiFlask, tone: "text-[#111111]" },
+    { name: "REST APIs", icon: Globe, tone: "text-[#0EA5E9]" },
   ],
   right: [
     { name: "PostgreSQL", icon: SiPostgresql, tone: "text-[#336791]" },
@@ -96,18 +105,41 @@ const skills = [
 ];
 
 const techStack: Array<{ name: string; icon: IconType | typeof BrainCircuit; tone: string }> = [
-  { name: "React", icon: SiReact, tone: "text-[#00A8D8]" },
-  { name: "TypeScript", icon: SiTypescript, tone: "text-[#3178C6]" },
-  { name: "JavaScript", icon: SiJavascript, tone: "text-[#D6A900]" },
+  // Programming Languages
+  { name: "Java", icon: SiOpenjdk, tone: "text-[#ED8B00]" },
   { name: "Python", icon: SiPython, tone: "text-[#3776AB]" },
-  { name: "Flask", icon: SiFlask, tone: "text-[#111111]" },
-  { name: "PostgreSQL", icon: SiPostgresql, tone: "text-[#336791]" },
+  { name: "JavaScript", icon: SiJavascript, tone: "text-[#D6A900]" },
+  { name: "TypeScript", icon: SiTypescript, tone: "text-[#3178C6]" },
+
+  // Frontend Development
+  { name: "HTML5", icon: SiHtml5, tone: "text-[#E34F26]" },
+  { name: "CSS3", icon: SiCss, tone: "text-[#1572B6]" },
+  { name: "React", icon: SiReact, tone: "text-[#61DAFB]" },
   { name: "Tailwind CSS", icon: SiTailwindcss, tone: "text-[#06B6D4]" },
+
+  // Backend Development
   { name: "Node.js", icon: SiNodedotjs, tone: "text-[#5FA04E]" },
-  { name: "Express.js", icon: Code2, tone: "text-[#111111]" },
-  { name: "Git", icon: SiGit, tone: "text-[#F05032]" },
+  { name: "Express.js", icon: Code2, tone: "text-[#64748B]" },
+  { name: "Flask", icon: SiFlask, tone: "text-[#111111]" },
+  { name: "Spring Boot", icon: SiSpringboot, tone: "text-[#6DB33F]" },
+  { name: "REST APIs", icon: Globe, tone: "text-[#0EA5E9]" },
+
+  // Databases
+  { name: "PostgreSQL", icon: SiPostgresql, tone: "text-[#336791]" },
+  { name: "Supabase", icon: SiSupabase, tone: "text-[#3ECF8E]" },
+
+  // Generative AI & AI Engineering
+  { name: "Generative AI", icon: BrainCircuit, tone: "text-[#8B5CF6]" },
+  { name: "LLM Integration", icon: Network, tone: "text-[#10A37F]" },
+  { name: "Prompt Engineering", icon: MessageSquareCode, tone: "text-[#F59E0B]" },
+  { name: "AI Agents", icon: Bot, tone: "text-[#06B6D4]" },
+
+  // Cloud, DevOps & Tools
+  // { name: "AWS", icon: SiAmazonaws, tone: "text-[#FF9900]" },
   { name: "Docker", icon: SiDocker, tone: "text-[#2496ED]" },
   { name: "Linux", icon: SiLinux, tone: "text-[#111111]" },
+  { name: "Git", icon: SiGit, tone: "text-[#F05032]" },
+  { name: "GitHub", icon: SiGithub, tone: "text-[#64748B]" },
 ];
 
 const SOCIAL_LINKS = {
@@ -799,14 +831,14 @@ function Contact() {
                   }
                 />
 
-                <ContactRow
+                {/* <ContactRow
                   icon={
                     <Phone className="icon-xs" />
                   }
                   text={
                     import.meta.env.VITE_PHONE
                   }
-                />
+                /> */}
 
                 <ContactRow
                   icon={
